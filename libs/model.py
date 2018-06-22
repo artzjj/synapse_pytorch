@@ -125,8 +125,7 @@ class unet_embed(res_unet):
           + [res_unet_AnisoBlock(filters[self.layer_num-2-x], filters[self.layer_num-2-x])
                 for x in range(1, self.aniso_num)]
           + [nn.Sequential(
-                  res_unet_AnisoBlock(filters[0], filters[0]),
-                  nn.Conv3d(filters[0], out_num, kernel_size=(1,3,3), stride=1, padding=(0,1,1), bias=True))])
+                  res_unet_AnisoBlock(filters[0], filters[0]))])
     
     def forward(self, x):
         down_u = [None]*(self.layer_num-1)
