@@ -44,6 +44,9 @@ class res_unet(nn.Module):
           + [nn.Sequential(
                   res_unet_AnisoBlock(filters[0], filters[0]),
                   nn.Conv3d(filters[0], out_num, kernel_size=(1,3,3), stride=1, padding=(0,1,1), bias=True))])
+        
+        self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid() 
 
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
@@ -62,9 +65,9 @@ class res_unet(nn.Module):
 
         for i in range(self.layer_num-1):
             x = down_u[self.layer_num-2-i] + self.upS[i](x)
-            x = F.relu(x)
+            x = self.relu(x)
             x = self.upC[i](x)
-            x = F.sigmoid(x)
+        x = self.sigmoid(x)
         return x        
 
 class res_unet_IsoBlock(nn.Module):
@@ -109,4 +112,35 @@ class res_unet_AnisoBlock(nn.Module):
         residual  = self.block1(x)
         out = residual + self.block2(residual)
         out = self.block3(out)
-        return out     
+        return out   
+    
+#--- Embedding ---#
+class unet_embed(res_unet):
+    def __init__(self):
+        super(unet_embed, self).__init__()
+        
+        self.upC = nn.ModuleList(
+            [res_unet_IsoBlock(filters[self.layer_num-2-x], filters[self.layer_num-2-x])
+                for x in range(self.layer_num-self.aniso_num-1)]
+          + [res_unet_AnisoBlock(filters[self.layer_num-2-x], filters[self.layer_num-2-x])
+                for x in range(1, self.aniso_num)]
+          + [nn.Sequential(
+                  res_unet_AnisoBlock(filters[0], filters[0]),
+                  nn.Conv3d(filters[0], out_num, kernel_size=(1,3,3), stride=1, padding=(0,1,1), bias=True))])
+    
+    def forward(self, x):
+        down_u = [None]*(self.layer_num-1)
+        for i in range(self.layer_num-1):
+            down_u[i] = self.downC[i](x)
+            x = self.downS[i](down_u[i])
+
+        x = self.center(x)
+
+        for i in range(self.layer_num-1):
+            x = down_u[self.layer_num-2-i] + self.upS[i](x)
+            x = self.relu(x)
+            x = self.upC[i](x)
+               
+        # final convolution & activation are removed        
+        return x 
+    
