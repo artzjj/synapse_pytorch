@@ -23,7 +23,7 @@ Training and testing data comes from MICCAI Challenge on Circuit Reconstruction 
 
 ### Command
 
-* Activate previously created conda environment : `source activate ins-seg-pytorch`.
+* Activate previously created conda environment : `source activate py3_pytorch`.
 * Run `train.py`.
 
 ```
