@@ -117,7 +117,7 @@ class res_unet_AnisoBlock(nn.Module):
 #--- Embedding ---#
 class unet_embed(res_unet):
     def __init__(self, in_num=1, out_num=1, filters=[32,64,96,128,160]):
-        super().__init__(in_num=1, out_num=1, filters=[32,64,96,128,160])
+        super(unet_embed, self).__init__(in_num=1, out_num=1, filters=[32,64,96,128,160])
         
         self.upC = nn.ModuleList(
             [res_unet_IsoBlock(filters[self.layer_num-2-x], filters[self.layer_num-2-x])
@@ -154,4 +154,4 @@ def load_partial_weights(model, pretrained_dict):
     # 3. load the new state dict
     model.load_state_dict(pretrained_dict)
     
-    return model
+    # return model
